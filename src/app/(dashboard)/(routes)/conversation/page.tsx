@@ -5,7 +5,7 @@ import { MessageSquare } from "lucide-react";
 import { useForm } from "react-hook-form";
 import {formSchema} from "./constants";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form } from "@/components/ui/form";
+import { Form, FormField, FormItem } from "@/components/ui/form";
 
 
 
@@ -45,6 +45,18 @@ const ConversationPage = () => {
                 gap-2
                 "
                 >
+               < FormField
+               name="prompt"
+               render={({field}) =>(
+                <FormItem className="col-span-12 lg:col-span-10">
+                    
+
+                </FormItem>
+               )
+            }
+               
+
+               />
             
                 </form>
                </Form>
