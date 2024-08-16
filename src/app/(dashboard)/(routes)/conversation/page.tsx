@@ -1,4 +1,4 @@
-"use client";    //// convo page.tsx
+"use client";
 
 import axios from "axios";
 import * as z from "zod";
@@ -12,12 +12,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ChatCompletionRequestMessage } from "openai";
 import { Empty } from "@/components/empty";
 import { Loader } from "@/components/loader";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { BotAvatar } from "@/components/bot-avatar";
+
+// Define the type if not available
+interface ChatCompletionRequestMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
 
 const ConversationPage = () => {
   const router = useRouter();
