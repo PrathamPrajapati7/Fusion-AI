@@ -25,7 +25,10 @@ async function makeApiRequest(messages: any[], retries: number = 0): Promise<any
       messages,
     });
 
-    return response.data.choices[0].message;
+    // Log the response data for debugging
+    console.log("API Response Data:", response.data);
+
+    return response.data;
   } catch (error: any) {
     if (error.response) {
       console.error(`[CONVERSATION_ERROR]: Error response data:`, error.response.data);
@@ -64,8 +67,14 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Messages must be a non-empty array.", { status: 400 });
     }
 
-    const message = await makeApiRequest(messages);
-    return NextResponse.json(message, { status: 200 });
+    const response = await makeApiRequest(messages);
+    
+    // Ensure response contains choices and message
+    if (!response?.choices?.[0]?.message) {
+      return new NextResponse("Invalid response from AI.", { status: 500 });
+    }
+
+    return NextResponse.json(response, { status: 200 });
 
   } catch (error: any) {
     if (error instanceof Error) {
