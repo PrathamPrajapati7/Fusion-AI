@@ -12,10 +12,7 @@ const LandingPage = () =>{
         <Link href="/sign-up">
         <Button> Sign-up </Button>
         </Link>
-<<<<<<< HEAD
     
-=======
->>>>>>> ea34bdf6c2415e1d4eba9a451d8d6ffb35d9d31f
         
         
         
@@ -24,11 +21,8 @@ const LandingPage = () =>{
     );
 }
 
-<<<<<<< HEAD
 export default LandingPage;
+
 
 
 //changes;
-=======
-export default LandingPage;
->>>>>>> ea34bdf6c2415e1d4eba9a451d8d6ffb35d9d31f
