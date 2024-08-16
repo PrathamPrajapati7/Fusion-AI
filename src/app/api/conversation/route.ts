@@ -1,15 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
-import { Configuration, OpenAIApi } from "openai";
+import { OpenAI } from "openai"; // Import OpenAI directly
 import { config } from 'dotenv';
 
 config();  // Ensure environment variables are loaded
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
-const openai = new OpenAIApi(configuration);
 
 const MAX_RETRIES = 7; // Retry attempts
 const INITIAL_DELAY = 1500; // Initial delay in milliseconds
@@ -18,17 +16,17 @@ const MAX_DELAY = 60000; // Maximum delay in milliseconds (60 seconds)
 async function makeApiRequest(messages: any[], retries: number = 0): Promise<any> {
   try {
     // Log the request payload for debugging
-    console.log("Request Payload:", { model: "gpt-3.5-turbo", messages });
+    console.log("Request Payload:", { model: "gpt-4", messages }); // Update model to GPT-4
 
-    const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
       messages,
     });
 
     // Log the response data for debugging
-    console.log("API Response Data:", response.data);
+    console.log("API Response Data:", response);
 
-    return response.data;
+    return response;
   } catch (error: any) {
     if (error.response) {
       console.error(`[CONVERSATION_ERROR]: Error response data:`, error.response.data);
@@ -59,7 +57,7 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Unauthorized.", { status: 401 });
     }
 
-    if (!configuration.apiKey) {
+    if (!openai.apiKey) {
       return new NextResponse("OpenAI API key not configured.", { status: 500 });
     }
 
