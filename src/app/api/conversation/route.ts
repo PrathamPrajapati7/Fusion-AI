@@ -1,12 +1,19 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai"; // Use the default export 'OpenAI'
+import OpenAI from "openai";
 import { config } from 'dotenv';
 
 config(); // Load environment variables
 
+// Ensure the API key is loaded
+const apiKey = process.env.OPENAI_API_KEY;
+if (!apiKey) {
+  console.error("OPENAI_API_KEY is missing from environment variables.");
+  throw new Error("OPENAI_API_KEY is not configured.");
+}
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey,
 });
 
 const MAX_RETRIES = 7; // Maximum number of retries
@@ -56,14 +63,14 @@ export async function POST(req: NextRequest) {
     const { userId } = auth();
     console.log("User ID:", userId);
 
-    const body = await req.json();
-    const { messages } = body;
-
     if (!userId) {
       return new NextResponse("Unauthorized.", { status: 401 });
     }
 
-    if (!openai.apiKey) {
+    const body = await req.json();
+    const { messages } = body;
+
+    if (!apiKey) {
       return new NextResponse("OpenAI API key not configured.", { status: 500 });
     }
 
@@ -73,7 +80,7 @@ export async function POST(req: NextRequest) {
 
     const response = await makeApiRequest(messages);
 
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json({ content: response.content }, { status: 200 });
 
   } catch (error: any) {
     console.error("[CONVERSATION_ERROR]:", error.message);
