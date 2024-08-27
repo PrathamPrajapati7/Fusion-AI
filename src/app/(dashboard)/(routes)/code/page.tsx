@@ -1,9 +1,9 @@
-"use client";    //// convo page.tsx
+"use client";
 
 import axios from "axios";
 import * as z from "zod";
 import { Heading } from "@/components/heading";
-import { Code } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { formSchema } from "./constants";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,28 +11,42 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ChatCompletionRequestMessage } from "openai";
+import { useState, useEffect, useRef } from "react";
 import { Empty } from "@/components/empty";
 import { Loader } from "@/components/loader";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { BotAvatar } from "@/components/bot-avatar";
+import { toast } from "sonner"; // Assuming you have installed and set up `sonner`
 
-const CodePage = () => {
+interface ChatCompletionRequestMessage {
+  role: "user" | "assistant" | "system";
+  content: string;
+}
+
+const ConversationPage = () => {
   const router = useRouter();
   const [Messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      prompt: ""
-    }
+      prompt: "",
+    },
   });
+
   const isLoading = form.formState.isSubmitting;
+
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [Messages]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const userMessage: ChatCompletionRequestMessage= {
+      const userMessage: ChatCompletionRequestMessage = {
         role: "user",
         content: values.prompt,
       };
@@ -42,11 +56,26 @@ const CodePage = () => {
         messages: newMessages,
       });
 
-      setMessages((current) => [...current, userMessage, response.data.choices[0].message]);
+      console.log("API Response:", response.data);
+
+      const botMessageContent = response.data.content;
+
+      if (!botMessageContent) {
+        console.error("No valid response from the AI:", response.data);
+        form.setError("prompt", { message: "The AI did not return a response. Please try again." });
+        return;
+      }
+
+      const botMessage: ChatCompletionRequestMessage = {
+        role: "assistant",
+        content: botMessageContent,
+      };
+
+      setMessages((current) => [...current, userMessage, botMessage]);
       form.reset();
     } catch (error: any) {
-      // TODO: Open Pro Model
-      console.log(error);
+      console.error("Error during submission:", error);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       router.refresh();
     }
@@ -55,11 +84,11 @@ const CodePage = () => {
   return (
     <div>
       <Heading
-        title={"Code Generation"}
-        description={"Our most advanced code generation tool "}
-        Icon={Code}
-        iconColor="text-green-500"
-        bgColor="bg-green-700/10"
+        title="Conversation"
+        description="Our most advanced conversation tool"
+        Icon={MessageSquare}
+        iconColor="text-violet-500"
+        bgColor="bg-violet-500/10"
       />
       <div className="px-4 lg:px-8">
         <Form {...form}>
@@ -86,7 +115,7 @@ const CodePage = () => {
                     <Input
                       className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
                       disabled={isLoading}
-                      placeholder="Simple toggle button using React hooks.."
+                      placeholder="How do I calculate the radius of a circle?"
                       {...field}
                     />
                   </FormControl>
@@ -100,37 +129,36 @@ const CodePage = () => {
         </Form>
       </div>
       <div className="space-y-4 mt-4">
-      {isLoading && (
-            <div className="p-8 rounded-lg w-full flex items-center justify-center bg-muted">
-              <Loader />
-            </div>
-          )}
-            {Messages.length === 0 && !isLoading && (
-              <Empty label="No conversation started." />
-
-        )}
-
-        <div className="flex flex-col-reverse gap-y-4">
-          {Messages.map((message) => (
-            <div
-            key={message.content}
-            className={cn(
-              "p-8 w-full flex items-start gap-x-8 rounded-lg",
-              message.role === "user"
-                ? "bg-white border border-black/10"
-                : "bg-muted",
-            )}
-          >
-            {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
-            <p className="text-sm">{message.content}</p>
+        {isLoading && (
+          <div className="p-8 rounded-lg w-full flex items-center justify-center bg-gray-200">
+            <Loader />
           </div>
-        ))}
+        )}
+        {Messages.length === 0 && !isLoading && (
+          <Empty label="No conversation started." />
+        )}
+        {Messages.length > 0 && (
+          <div className="flex flex-col-reverse gap-y-4">
+            {Messages.map((message, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "p-4 w-full flex items-start gap-x-4 rounded-lg",
+                  message.role === "user"
+                    ? "bg-white border border-gray-300"
+                    : "bg-gray-100"
+                )}
+              >
+                {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
+                <p className="text-sm">{message.content}</p>
+              </div>
+            ))}
+            <div ref={bottomRef} />
+          </div>
+        )}
       </div>
     </div>
-  </div>
-
-);
+  );
 };
 
-
-export default CodePage;
+export default ConversationPage;
