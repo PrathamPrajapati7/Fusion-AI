@@ -1,3 +1,5 @@
 {
-  "/(dashboard)/(routes)/conversation/page": "app/(dashboard)/(routes)/conversation/page.js"
+  "/api/image/route": "app/api/image/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/(dashboard)/(routes)/image/page": "app/(dashboard)/(routes)/image/page.js"
 }

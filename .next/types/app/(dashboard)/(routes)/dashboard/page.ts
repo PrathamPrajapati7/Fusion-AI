@@ -1,4 +1,4 @@
-// File: C:\Users\prath\OneDrive\Desktop\Fusion-AI\src\app\(dashboard)\(routes)\dashboard\page.tsx
+// File: C:\Users\yashr\OneDrive\Desktop\Fusion-AI\src\app\(dashboard)\(routes)\dashboard\page.tsx
 import * as entry from '../../../../../../src/app/(dashboard)/(routes)/dashboard/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
