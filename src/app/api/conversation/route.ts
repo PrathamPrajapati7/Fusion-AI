@@ -1,34 +1,44 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
-import { Configuration, OpenAIApi } from "openai";
+import OpenAI from "openai";
 import { config } from 'dotenv';
 
-config();  // Ensure environment variables are loaded
+config(); // Load environment variables
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+// Ensure the API key is loaded
+const apiKey = process.env.OPENAI_API_KEY;
+if (!apiKey) {
+  console.error("OPENAI_API_KEY is missing from environment variables.");
+  throw new Error("OPENAI_API_KEY is not configured.");
+}
+
+const openai = new OpenAI({
+  apiKey,
 });
 
-const openai = new OpenAIApi(configuration);
-
-const MAX_RETRIES = 7; // Retry attempts
+const MAX_RETRIES = 7; // Maximum number of retries
 const INITIAL_DELAY = 1500; // Initial delay in milliseconds
-const MAX_DELAY = 60000; // Maximum delay in milliseconds (60 seconds)
+const MAX_DELAY = 60000; // Maximum delay in milliseconds
 
 async function makeApiRequest(messages: any[], retries: number = 0): Promise<any> {
   try {
-    // Log the request payload for debugging
-    console.log("Request Payload:", { model: "gpt-3.5-turbo", messages });
+    console.log("Request Payload:", { model: "gpt-4", messages });
 
-    const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
       messages,
     });
 
-    // Log the response data for debugging
-    console.log("API Response Data:", response.data);
+    console.log("API Response Data:", response); // Log the entire response for debugging
 
-    return response.data;
+    // Extract the response content based on the new structure
+    const responseData = response.choices[0]?.message || null;
+
+    if (!responseData) {
+      throw new Error("Invalid response from AI.");
+    }
+
+    return responseData;
   } catch (error: any) {
     if (error.response) {
       console.error(`[CONVERSATION_ERROR]: Error response data:`, error.response.data);
@@ -38,7 +48,7 @@ async function makeApiRequest(messages: any[], retries: number = 0): Promise<any
     }
 
     if (error.response?.status === 429 && retries < MAX_RETRIES) {
-      const delay = Math.min(INITIAL_DELAY * Math.pow(2, retries) + Math.random() * 1000, MAX_DELAY); // Capped delay
+      const delay = Math.min(INITIAL_DELAY * Math.pow(2, retries) + Math.random() * 1000, MAX_DELAY);
       console.warn(`[CONVERSATION_WARNING]: Rate limit exceeded. Retrying in ${delay}ms... (Attempt ${retries + 1})`);
       await new Promise(resolve => setTimeout(resolve, delay));
       return makeApiRequest(messages, retries + 1);
@@ -51,15 +61,16 @@ async function makeApiRequest(messages: any[], retries: number = 0): Promise<any
 export async function POST(req: NextRequest) {
   try {
     const { userId } = auth();
-    console.log("User ID:", userId); // Log User ID for debugging
-    const body = await req.json();
-    const { messages } = body;
+    console.log("User ID:", userId);
 
     if (!userId) {
       return new NextResponse("Unauthorized.", { status: 401 });
     }
 
-    if (!configuration.apiKey) {
+    const body = await req.json();
+    const { messages } = body;
+
+    if (!apiKey) {
       return new NextResponse("OpenAI API key not configured.", { status: 500 });
     }
 
@@ -68,20 +79,13 @@ export async function POST(req: NextRequest) {
     }
 
     const response = await makeApiRequest(messages);
-    
-    // Ensure response contains choices and message
-    if (!response?.choices?.[0]?.message) {
-      return new NextResponse("Invalid response from AI.", { status: 500 });
-    }
 
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json({ content: response.content }, { status: 200 });
 
   } catch (error: any) {
+    console.error("[CONVERSATION_ERROR]:", error.message);
     if (error instanceof Error) {
-      console.error("[CONVERSATION_ERROR]:", error.message);
       console.error("Stack trace:", error.stack);
-    } else {
-      console.error("[CONVERSATION_ERROR]: An unknown error occurred.");
     }
 
     return new NextResponse("Internal server error.", { status: 500 });

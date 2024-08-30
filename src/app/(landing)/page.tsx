@@ -12,6 +12,7 @@ const LandingPage = () =>{
         <Link href="/sign-up">
         <Button> Sign-up </Button>
         </Link>
+    
         
         
         
@@ -21,3 +22,6 @@ const LandingPage = () =>{
 }
 
 export default LandingPage;
+
+
+//changes;
