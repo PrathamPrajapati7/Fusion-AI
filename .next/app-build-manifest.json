@@ -31,10 +31,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/layout.js"
     ],
-    "/(dashboard)/(routes)/code/page": [
+    "/(dashboard)/(routes)/music/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/(routes)/code/page.js"
+      "static/chunks/app/(dashboard)/(routes)/music/page.js"
     ]
   }
 }
