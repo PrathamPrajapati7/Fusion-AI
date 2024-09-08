@@ -1,7 +1,8 @@
 {
-  "/api/conversation/route": "app/api/conversation/route.js",
-  "/(dashboard)/(routes)/dashboard/page": "app/(dashboard)/(routes)/dashboard/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/video/route": "app/api/video/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
   "/(auth)/(routes)/sign-in/[[...sign-in]]/page": "app/(auth)/(routes)/sign-in/[[...sign-in]]/page.js",
-  "/(dashboard)/(routes)/image/page": "app/(dashboard)/(routes)/image/page.js",
-  "/(dashboard)/(routes)/conversation/page": "app/(dashboard)/(routes)/conversation/page.js"
+  "/(dashboard)/(routes)/dashboard/page": "app/(dashboard)/(routes)/dashboard/page.js",
+  "/(dashboard)/(routes)/video/page": "app/(dashboard)/(routes)/video/page.js"
 }
