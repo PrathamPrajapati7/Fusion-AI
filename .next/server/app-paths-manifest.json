@@ -1,5 +1,8 @@
 {
-  "/api/music/route": "app/api/music/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/video/route": "app/api/video/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/(auth)/(routes)/sign-in/[[...sign-in]]/page": "app/(auth)/(routes)/sign-in/[[...sign-in]]/page.js",
   "/(dashboard)/(routes)/dashboard/page": "app/(dashboard)/(routes)/dashboard/page.js",
-  "/(dashboard)/(routes)/music/page": "app/(dashboard)/(routes)/music/page.js"
+  "/(dashboard)/(routes)/video/page": "app/(dashboard)/(routes)/video/page.js"
 }
