@@ -715,6 +715,9 @@ video {
   .aspect-square {
   aspect-ratio: 1 / 1;
 }
+  .aspect-video {
+  aspect-ratio: 16 / 9;
+}
   .h-10 {
   height: 2.5rem;
 }
@@ -933,6 +936,10 @@ video {
   .bg-background {
   background-color: hsl(var(--background));
 }
+  .bg-black {
+  --tw-bg-opacity: 1;
+  background-color: rgb(0 0 0 / var(--tw-bg-opacity));
+}
   .bg-black\/10 {
   background-color: rgb(0 0 0 / 0.1);
 }
@@ -944,6 +951,9 @@ video {
 }
   .bg-destructive {
   background-color: hsl(var(--destructive));
+}
+  .bg-emerald-500\/10 {
+  background-color: rgb(16 185 129 / 0.1);
 }
   .bg-gray-100 {
   --tw-bg-opacity: 1;
@@ -1093,6 +1103,10 @@ video {
 }
   .text-destructive-foreground {
   color: hsl(var(--destructive-foreground));
+}
+  .text-emerald-500 {
+  --tw-text-opacity: 1;
+  color: rgb(16 185 129 / var(--tw-text-opacity));
 }
   .text-foreground {
   color: hsl(var(--foreground));

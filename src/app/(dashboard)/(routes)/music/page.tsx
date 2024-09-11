@@ -13,14 +13,9 @@ import { Music } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner"; // Assuming you have installed and set up sonner
+import { toast } from "sonner";
 import * as z from "zod";
 import { formSchema } from "./constants";
-
-interface ChatCompletionRequestMessage {
-  role: "user" | "assistant" | "system";
-  content: string;
-}
 
 const MusicPage = () => {
   const router = useRouter();
@@ -50,24 +45,23 @@ const MusicPage = () => {
     }
 
     try {
-      setMusic(undefined);
+      setMusic(undefined); // Clear the previous audio
 
-      // Make sure the request to the API includes the necessary headers
       const response = await axios.post("/api/music", values);
 
       console.log("API Response:", response.data);
 
-      const botMessageContent = response.data.content;
+      const audioUrl = response.data.audio;
 
-      if (!botMessageContent) {
-        console.error("No valid response from the AI:", response.data);
+      if (!audioUrl) {
+        console.error("No valid audio URL returned:", response.data);
         form.setError("prompt", {
-          message: "The AI did not return a response. Please try again.",
+          message: "The AI did not return an audio URL. Please try again.",
         });
         return;
       }
 
-      setMusic(response.data.audio);
+      setMusic(audioUrl); // Update the state with the new audio URL
       form.reset();
     } catch (error: any) {
       console.error("Error during submission:", error);
@@ -83,8 +77,8 @@ const MusicPage = () => {
         title="Music Generation"
         description="Turn your prompt into music"
         Icon={Music}
-        iconColor="text-embrald-500"
-        bgColor="bg-embrald-500/10"
+        iconColor="text-emerald-500"
+        bgColor="bg-emerald-500/10"
       />
       <div className="px-4 lg:px-8">
         <Form {...form}>
@@ -111,7 +105,7 @@ const MusicPage = () => {
                     <Input
                       className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
                       disabled={isLoading}
-                      placeholder="Piano solo"
+                      placeholder="Enter your music prompt here"
                       {...field}
                     />
                   </FormControl>
@@ -133,13 +127,14 @@ const MusicPage = () => {
             <Loader />
           </div>
         )}
-        {!music && !isLoading && <Empty label="No Music generated." />}
+        {!music && !isLoading && <Empty label="No music generated." />}
         {music && (
           <audio controls className="w-full mt-8">
-            <source src={music} />
+            <source src={music} type="audio/mpeg" />
           </audio>
         )}
       </div>
+      <div ref={bottomRef} />
     </div>
   );
 };
