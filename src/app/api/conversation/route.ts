@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { config } from 'dotenv';
+import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
 
 config(); // Load environment variables
 
@@ -78,7 +79,16 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Messages must be a non-empty array.", { status: 400 });
     }
 
+    const freeTrial = await checkApiLimit();
+
+    if(!freeTrial){
+      return new NextResponse("Free trial has expired. Please upgrade to a paid plan.", { status: 403
+    });
+  }
+
     const response = await makeApiRequest(messages);
+
+    await increaseApiLimit();
 
     return NextResponse.json({ content: response.content }, { status: 200 });
 
@@ -87,6 +97,8 @@ export async function POST(req: NextRequest) {
     if (error instanceof Error) {
       console.error("Stack trace:", error.stack);
     }
+
+    
 
     return new NextResponse("Internal server error.", { status: 500 });
   }
