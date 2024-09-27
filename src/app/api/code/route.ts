@@ -2,10 +2,11 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { config } from 'dotenv';
+import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
 
 config(); // Load environment variables
 
-// Ensure the API key is loaded
+// Ensure the API key is loaded correctly
 const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
   console.error("OPENAI_API_KEY is missing from environment variables.");
@@ -25,13 +26,15 @@ const instructionMessage = {
 // Export the POST function to handle POST requests
 export async function POST(req: Request) {
   try {
+    // Perform authentication check early
     const { userId } = auth();
     console.log("User ID:", userId);
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized. Please log in to access this service." }, { status: 401 });
     }
 
+    // Parse request body
     const body = await req.json();
     const { messages } = body;
 
@@ -39,14 +42,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Messages must be a non-empty array." }, { status: 400 });
     }
 
+    // Check API usage limits
+    const freeTrial = await checkApiLimit();
+
+    if (!freeTrial) {
+      return NextResponse.json({ error: "Free trial has expired. Please upgrade to a paid plan." }, { status: 403 });
+    }
+
     console.log("Sending messages to OpenAI:", messages);
 
     // Call the OpenAI API to create a chat completion
     const response = await openai.chat.completions.create({
-      model: "gpt-4", // Ensure this is the correct model name
-      messages: [instructionMessage, ...messages],
+      model: "gpt-4",
+      messages: [instructionMessage, ...messages], // Include the system message
     });
 
+    await increaseApiLimit();
+
+    // Extract the response content safely
     const content = response.choices?.[0]?.message?.content;
 
     if (!content) {
@@ -62,6 +75,6 @@ export async function POST(req: Request) {
       console.error("Stack trace:", error.stack);
     }
 
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error. Please try again later." }, { status: 500 });
   }
 }
