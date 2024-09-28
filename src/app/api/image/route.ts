@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { config } from 'dotenv';
 
+import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
+
 config();
 
 const apiKey = process.env.OPENAI_API_KEY;
@@ -31,11 +33,19 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Invalid resolution", { status: 400 });
     }
 
+    const freeTrial = await checkApiLimit();
+
+    if (!freeTrial) {
+      return new NextResponse("Free trial has expired. Please upgrade to a paid plan.", { status: 403 });
+    }
+
     const response = await openai.images.generate({
       prompt,
       n: parseInt(amount, 10),
       size: resolution,
     });
+
+    await increaseApiLimit();
 
     return NextResponse.json(response.data);
   } catch (error: any) {

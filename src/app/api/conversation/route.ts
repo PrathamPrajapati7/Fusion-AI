@@ -2,10 +2,11 @@ import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { config } from 'dotenv';
+import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
 
 config(); // Load environment variables
 
-// Ensure the API key is loaded
+// Ensure the API key is loaded correctly
 const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
   console.error("OPENAI_API_KEY is missing from environment variables.");
@@ -31,7 +32,7 @@ async function makeApiRequest(messages: any[], retries: number = 0): Promise<any
 
     console.log("API Response Data:", response); // Log the entire response for debugging
 
-    // Extract the response content based on the new structure
+    // Extract the response content safely
     const responseData = response.choices[0]?.message || null;
 
     if (!responseData) {
@@ -50,7 +51,7 @@ async function makeApiRequest(messages: any[], retries: number = 0): Promise<any
     if (error.response?.status === 429 && retries < MAX_RETRIES) {
       const delay = Math.min(INITIAL_DELAY * Math.pow(2, retries) + Math.random() * 1000, MAX_DELAY);
       console.warn(`[CONVERSATION_WARNING]: Rate limit exceeded. Retrying in ${delay}ms... (Attempt ${retries + 1})`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       return makeApiRequest(messages, retries + 1);
     } else {
       throw error; // Rethrow the error if not a 429 or max retries exceeded
@@ -78,10 +79,17 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Messages must be a non-empty array.", { status: 400 });
     }
 
+    const freeTrial = await checkApiLimit();
+
+    if (!freeTrial) {
+      return new NextResponse("Free trial has expired. Please upgrade to a paid plan.", { status: 403 });
+    }
+
     const response = await makeApiRequest(messages);
 
-    return NextResponse.json({ content: response.content }, { status: 200 });
+    await increaseApiLimit();
 
+    return NextResponse.json({ content: response.content }, { status: 200 });
   } catch (error: any) {
     console.error("[CONVERSATION_ERROR]:", error.message);
     if (error instanceof Error) {

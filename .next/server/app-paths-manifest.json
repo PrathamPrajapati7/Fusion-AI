@@ -1,4 +1,5 @@
 {
-  "/(dashboard)/(routes)/music/page": "app/(dashboard)/(routes)/music/page.js",
-  "/(dashboard)/(routes)/video/page": "app/(dashboard)/(routes)/video/page.js"
+  "/(auth)/(routes)/sign-in/[[...sign-in]]/page": "app/(auth)/(routes)/sign-in/[[...sign-in]]/page.js",
+  "/(dashboard)/(routes)/dashboard/page": "app/(dashboard)/(routes)/dashboard/page.js",
+  "/(dashboard)/(routes)/conversation/page": "app/(dashboard)/(routes)/conversation/page.js"
 }
