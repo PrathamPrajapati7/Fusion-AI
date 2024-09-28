@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
 import { MAX_FREE_COUNTS } from "../../constants";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+
 import { Zap } from "lucide-react";
+import { Progress } from "./ui/progress";
+import { Button } from "./ui/button";
 
 interface FreeCounterProps {
     apiLimitCount: number;
