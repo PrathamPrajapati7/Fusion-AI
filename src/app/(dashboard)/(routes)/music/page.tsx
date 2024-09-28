@@ -16,8 +16,10 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { formSchema } from "./constants";
+import { useProModal } from "../../../../../hooks/use-pro-modal";
 
 const MusicPage = () => {
+  const proModal= useProModal();
   const router = useRouter();
   const { user, isSignedIn } = useUser();
   const [music, setMusic] = useState<string>();
@@ -64,6 +66,9 @@ const MusicPage = () => {
       setMusic(audioUrl); // Update the state with the new audio URL
       form.reset();
     } catch (error: any) {
+      if(error?.response?.status === 403){
+        proModal.onOpen();
+       }
       console.error("Error during submission:", error);
       toast.error("Something went wrong. Please try again.");
     } finally {

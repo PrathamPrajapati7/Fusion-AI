@@ -16,8 +16,10 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner"; // Assuming you have installed and set up sonner
 import * as z from "zod";
 import { formSchema } from "./constants";
+import { useProModal } from "../../../../../hooks/use-pro-modal";
 
 const VideoPage = () => {
+  const proModal= useProModal();
   const router = useRouter();
   const { user, isSignedIn } = useUser();
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -65,6 +67,9 @@ const VideoPage = () => {
       setVideoUrl(videoUrl);
       form.reset();
     } catch (error: any) {
+      if(error?.response?.status === 403){
+        proModal.onOpen();
+       }
       console.error("Error during submission:", error);
       toast.error("Something went wrong. Please try again.");
     } finally {

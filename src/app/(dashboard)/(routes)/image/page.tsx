@@ -23,8 +23,10 @@ import { Empty } from "@/components/empty";
 import { Loader } from "@/components/loader";
 import { Card, CardFooter } from "@/components/ui/card";
 import Image from "next/image";
+import { useProModal } from "../../../../../hooks/use-pro-modal";
 
 const ImagePage = () => {
+  const proModal= useProModal();
   const router = useRouter();
   const [images, setImages] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -58,6 +60,9 @@ const ImagePage = () => {
       setImages(urls);
       form.reset();
     } catch (error: any) {
+      if(error?.response?.status === 403){
+        proModal.onOpen();
+       }
       if (axios.isAxiosError(error)) {
         console.error("Axios error:", error.response?.data); // Log the detailed error response
       } else {

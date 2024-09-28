@@ -19,6 +19,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { BotAvatar } from "@/components/bot-avatar";
 import { toast } from "sonner"; // Assuming you have installed and set up sonner
 import ReactMarkdown from "react-markdown";
+import { useProModal } from "../../../../../hooks/use-pro-modal";
 
 interface ChatCompletionRequestMessage {
   role: "user" | "assistant" | "system";
@@ -26,6 +27,7 @@ interface ChatCompletionRequestMessage {
 }
 
 const CodePage = () => {
+  const proModal= useProModal();
   const router = useRouter();
   const [Messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -75,6 +77,9 @@ const CodePage = () => {
       setMessages((current) => [...current, userMessage, botMessage]);
       form.reset();
     } catch (error: any) {
+      if(error?.response?.status === 403){
+        proModal.onOpen();
+       }
       console.error("Error during submission:", error);
       toast.error("Something went wrong. Please try again.");
     } finally {

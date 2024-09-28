@@ -1,4 +1,4 @@
-// File: C:\Users\suhas\OneDrive\Desktop\Fusion-AI\src\app\(landing)\page.tsx
+// File: D:\college project\Fusion-AI\src\app\(landing)\page.tsx
 import * as entry from '../../../../src/app/(landing)/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

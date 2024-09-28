@@ -10,6 +10,7 @@ import {
   UserButton
 } from '@clerk/nextjs'
 import './globals.css'
+import { ModalProvider } from "@/components/modal-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +28,7 @@ export default function RootLayout({
     <ClerkProvider>
     <html lang='en'>
       <body>
+        <ModalProvider/>
         {children}
       </body>
     </html>
