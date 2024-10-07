@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { config } from 'dotenv';
 import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
+import { checkSubscription } from "@/lib/subscription";
 
 config(); // Load environment variables
 
@@ -44,9 +45,10 @@ export async function POST(req: Request) {
 
     // Check API usage limits
     const freeTrial = await checkApiLimit();
+    const isPro = await checkSubscription();
 
-    if (!freeTrial) {
-      return NextResponse.json({ error: "Free trial has expired. Please upgrade to a paid plan." }, { status: 403 });
+    if (!freeTrial && !isPro) {
+      return new NextResponse("Free trial has expired. Please upgrade to a paid plan.", { status: 403 });
     }
 
     console.log("Sending messages to OpenAI:", messages);
@@ -57,7 +59,9 @@ export async function POST(req: Request) {
       messages: [instructionMessage, ...messages], // Include the system message
     });
 
+    if(!isPro){
     await increaseApiLimit();
+    }
 
     // Extract the response content safely
     const content = response.choices?.[0]?.message?.content;
