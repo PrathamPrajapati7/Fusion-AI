@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { config } from 'dotenv';
 
 import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
+import { checkSubscription } from "@/lib/subscription";
 
 config();
 
@@ -34,8 +35,9 @@ export async function POST(req: NextRequest) {
     }
 
     const freeTrial = await checkApiLimit();
+    const isPro = await checkSubscription();
 
-    if (!freeTrial) {
+    if (!freeTrial && !isPro) {
       return new NextResponse("Free trial has expired. Please upgrade to a paid plan.", { status: 403 });
     }
 
@@ -45,7 +47,9 @@ export async function POST(req: NextRequest) {
       size: resolution,
     });
 
+    if(!isPro){
     await increaseApiLimit();
+    }
 
     return NextResponse.json(response.data);
   } catch (error: any) {

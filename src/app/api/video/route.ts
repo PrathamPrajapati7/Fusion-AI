@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import Replicate from "replicate";
 
 import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
+import { checkSubscription } from "@/lib/subscription";
 
 // Instantiate Replicate (without API token initialization in the constructor)
 const replicate = new Replicate();
@@ -22,10 +23,11 @@ export async function POST(req: NextRequest) {
     const input = { prompt_b: prompt };
 
     const freeTrial = await checkApiLimit();
+    const isPro = await checkSubscription();
 
-    if(!freeTrial){
-      return new NextResponse("Free trial has expired. Please upgrade to a paid plan.", { status: 403
-    });
+    if (!freeTrial && !isPro) {
+      return new NextResponse("Free trial has expired. Please upgrade to a paid plan.", { status: 403 });
+    
 
   }
 
@@ -37,7 +39,9 @@ export async function POST(req: NextRequest) {
 
     console.log("Replicate API response:", response);
 
+    if(!isPro){
     await increaseApiLimit();
+    }
     return NextResponse.json(response, { status: 200 });
   } catch (error: unknown) {
     console.error("[VIDEO_ERROR]: ", error);

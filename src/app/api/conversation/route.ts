@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { config } from 'dotenv';
 import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
+import { checkSubscription } from "@/lib/subscription";
 
 config(); // Load environment variables
 
@@ -80,14 +81,17 @@ export async function POST(req: NextRequest) {
     }
 
     const freeTrial = await checkApiLimit();
+    const isPro = await checkSubscription();
 
-    if (!freeTrial) {
+    if (!freeTrial && !isPro) {
       return new NextResponse("Free trial has expired. Please upgrade to a paid plan.", { status: 403 });
     }
 
     const response = await makeApiRequest(messages);
 
+    if (!isPro) {
     await increaseApiLimit();
+    }
 
     return NextResponse.json({ content: response.content }, { status: 200 });
   } catch (error: any) {
